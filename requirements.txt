@@ -1,4 +1,5 @@
 Flask
-pytesseract
-Pillow
-pdf2image 
+flask-cors
+gunicorn
+google-generativeai
+werkzeug

@@ -1,54 +1,69 @@
-# app.py (Updated to use working Gemini SDK approach for invoices)
+# app.py — InvoiceFlow: AI Invoice Analyzer with Q&A
 import os
 import base64
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 from werkzeug.utils import secure_filename
-from PIL import Image
-import pytesseract
-from pdf2image import convert_from_path
 import google.generativeai as genai
-import json, re
-
-# Configure Tesseract for OCR (if needed)
-pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf'}
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.secret_key = 'supersecretkey'
+app.secret_key = os.environ.get('SECRET_KEY', 'supersecretkey')
+
+# Allow all origins (Netlify proxy will handle this, but keep open for safety)
+CORS(app)
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
-# Gemini setup (SDK-based)
-GEMINI_API_KEY = "AIzaSyAgWCSBm2igEQP3fodIQNcflY9qur7ivqQ"  # Use your API key
+# Gemini setup — read from environment variable
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "AIzaSyDQIEbdAo2Vzc9OS7J8CRU51oBSVlOzJNg")
 genai.configure(api_key=GEMINI_API_KEY)
 
-# Allowed file types
+# In-memory store for the latest invoice (single-user demo)
+_invoice_store = {
+    "encoded_file": None,
+    "mime_type": None,
+    "summary": None,
+    "filename": None,
+}
+
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Gemini invoice analysis using inline base64 and SDK
-def analyze_invoice_with_gemini_base64(encoded_file, mime_type):
-    prompt = """
-    You're a friendly, conversational assistant who summarizes invoices in a simple and chatty way.
-    When given an invoice file, reply as if you're speaking to a person who wants a quick rundown.
-    The tone should be casual, helpful, and personal. Make sure it feels like a human message.
-    Include the following key points in your explanation:
-    - Who the invoice is from (company or sender)
-    - Date of the invoice
-    - Purpose or description of the invoice
-    - Total amount due
-    - Invoice number
 
-    Use emojis lightly (if appropriate), keep it short and friendly.
-    Here's an example:
-    "Hey! 👋 This invoice is from ABC Corp, dated May 4. It’s for website hosting services and the total is $89.99. Invoice number is #4567."
+def analyze_invoice_with_gemini(encoded_file, mime_type):
+    """Analyze an invoice and return a friendly summary."""
+    prompt = """
+    You are a smart, friendly invoice assistant. Analyze the uploaded invoice and provide a clear, well-structured summary.
+
+    Format your response with these sections using markdown:
+    
+    ## 📋 Invoice Overview
+    - **From:** (company/sender name)
+    - **Invoice #:** (number)
+    - **Date:** (invoice date)
+    - **Due Date:** (if available)
+    
+    ## 💰 Financial Details
+    - **Subtotal:** (amount)
+    - **Tax:** (if applicable)
+    - **Total Due:** (total amount — make this stand out)
+    
+    ## 📝 Line Items
+    List each item/service with its amount.
+    
+    ## 📌 Key Notes
+    Any payment terms, late fees, or important details worth noting.
+
+    Keep the tone professional but approachable. Use emojis sparingly for visual appeal.
+    If any field is not found, simply skip it — don't mention it's missing.
     """
-    model = genai.GenerativeModel('gemini-2.5-flash')  # ✅ CORRECTED
+    model = genai.GenerativeModel('gemini-2.5-flash')
     response = model.generate_content([
         {
             "inline_data": {
@@ -56,32 +71,51 @@ def analyze_invoice_with_gemini_base64(encoded_file, mime_type):
                 "data": encoded_file
             }
         },
-        {
-            "text": prompt
-        }
+        {"text": prompt}
     ])
-    return {"summary": response.text.strip()}
+    return response.text.strip()
 
 
-@app.route('/list_models')
-def list_models():
-    models = genai.list_models()
-    return f"<pre>{models}</pre>"
+def ask_about_invoice(encoded_file, mime_type, question, chat_history=""):
+    """Answer a question about the uploaded invoice."""
+    prompt = f"""
+    You are a helpful invoice assistant. The user has uploaded an invoice and wants to ask questions about it.
+    
+    Previous conversation context:
+    {chat_history}
+    
+    User's question: {question}
+    
+    Answer the question based on the invoice. Be concise, helpful, and friendly.
+    If the question is unrelated to the invoice, politely redirect them.
+    Use markdown formatting for clarity. Keep answers focused and under 200 words unless more detail is needed.
+    """
+    model = genai.GenerativeModel('gemini-2.5-flash')
+    response = model.generate_content([
+        {
+            "inline_data": {
+                "mime_type": mime_type,
+                "data": encoded_file
+            }
+        },
+        {"text": prompt}
+    ])
+    return response.text.strip()
+
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return jsonify({"status": "InvoiceFlow API is running"})
 
-@app.route('/upload', methods=['POST'])
+
+@app.route('/api/upload', methods=['POST'])
 def upload():
     if 'invoice' not in request.files:
-        flash('No file uploaded.')
-        return redirect(url_for('index'))
+        return jsonify({"error": "No file uploaded."}), 400
 
     file = request.files['invoice']
     if file.filename == '':
-        flash('No file selected.')
-        return redirect(url_for('index'))
+        return jsonify({"error": "No file selected."}), 400
 
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
@@ -92,17 +126,55 @@ def upload():
             with open(filepath, 'rb') as f:
                 file_data = f.read()
             encoded_file = base64.b64encode(file_data).decode('utf-8')
-            mime_type = "application/pdf" if filename.lower().endswith(".pdf") else "image/jpeg"
 
-            result = analyze_invoice_with_gemini_base64(encoded_file, mime_type)
-            return render_template('result.html', fields=result, ocr_text="(Gemini used for full file analysis)")
+            ext = filename.lower().rsplit('.', 1)[-1]
+            if ext == 'pdf':
+                mime_type = 'application/pdf'
+            elif ext == 'png':
+                mime_type = 'image/png'
+            else:
+                mime_type = 'image/jpeg'
+
+            summary = analyze_invoice_with_gemini(encoded_file, mime_type)
+
+            # Store for Q&A
+            _invoice_store["encoded_file"] = encoded_file
+            _invoice_store["mime_type"] = mime_type
+            _invoice_store["summary"] = summary
+            _invoice_store["filename"] = filename
+
+            return jsonify({"summary": summary, "filename": filename})
 
         except Exception as e:
-            flash(f'Error: {str(e)}')
-            return redirect(url_for('index'))
+            return jsonify({"error": f"Error processing invoice: {str(e)}"}), 500
     else:
-        flash('Invalid file type. Upload PNG, JPG, JPEG, or PDF.')
-        return redirect(url_for('index'))
+        return jsonify({"error": "Invalid file type. Upload PNG, JPG, JPEG, or PDF."}), 400
+
+
+@app.route('/api/ask', methods=['POST'])
+def ask():
+    """API endpoint for Q&A about the uploaded invoice."""
+    data = request.get_json()
+    question = data.get('question', '').strip()
+    history = data.get('history', '')
+
+    if not question:
+        return jsonify({"error": "Please enter a question."}), 400
+
+    if not _invoice_store["encoded_file"]:
+        return jsonify({"error": "No invoice uploaded. Please upload an invoice first."}), 400
+
+    try:
+        answer = ask_about_invoice(
+            _invoice_store["encoded_file"],
+            _invoice_store["mime_type"],
+            question,
+            history
+        )
+        return jsonify({"answer": answer})
+    except Exception as e:
+        return jsonify({"error": f"AI error: {str(e)}"}), 500
+
 
 if __name__ == '__main__':
     app.run(debug=True)
