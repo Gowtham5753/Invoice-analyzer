@@ -1,17 +1,18 @@
-<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>InvoiceFlow — Smart Invoice Processing</title>
+  <meta name="description" content="Upload an invoice and let AI extract key details instantly using Google Gemini.">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
       --primary: #6366f1;
       --primary-dark: #4f46e5;
       --primary-light: rgba(99, 102, 241, 0.08);
-      --primary-glow: rgba(99, 102, 241, 0.2);
+      --primary-glow: rgba(99, 102, 241, 0.22);
       --accent: #8b5cf6;
       --surface: #ffffff;
       --bg: #f0f2f8;
@@ -21,9 +22,15 @@
       --border: #e4e7f1;
       --success: #10b981;
       --danger: #ef4444;
+      --chat-user: #ede9fe;
+      --chat-ai: #f0fdf4;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
       background: var(--bg);
@@ -33,16 +40,15 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 24px;
+      padding: 32px 16px 48px;
       -webkit-font-smoothing: antialiased;
     }
 
-    /* ─── Hero ─── */
+    /* Hero */
     .hero {
       text-align: center;
-      margin-bottom: 36px;
-      animation: fadeDown 0.6s ease;
+      margin-bottom: 32px;
+      animation: fadeDown .6s ease;
     }
 
     .hero-logo {
@@ -53,18 +59,17 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 20px;
-      color: white;
+      margin: 0 auto 18px;
+      color: #fff;
       font-weight: 800;
       font-size: 20px;
-      letter-spacing: -0.5px;
       box-shadow: 0 8px 24px var(--primary-glow);
     }
 
     .hero h1 {
-      font-size: 2.4rem;
+      font-size: 2.3rem;
       font-weight: 800;
-      letter-spacing: -0.04em;
+      letter-spacing: -.04em;
       margin-bottom: 8px;
       background: linear-gradient(135deg, var(--text), var(--primary-dark));
       -webkit-background-clip: text;
@@ -73,32 +78,33 @@
     }
 
     .hero p {
-      font-size: 1.05rem;
+      font-size: 1rem;
       color: var(--text-muted);
       max-width: 380px;
       margin: 0 auto;
       line-height: 1.5;
     }
 
-    /* ─── Upload Card ─── */
-    .upload-card {
+    /* Card */
+    .card {
       background: var(--surface);
       border-radius: 20px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 12px 40px rgba(0,0,0,0.06);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .04), 0 12px 40px rgba(0, 0, 0, .07);
       padding: 32px;
       width: 100%;
-      max-width: 520px;
-      animation: fadeUp 0.6s ease 0.1s both;
+      max-width: 560px;
+      animation: fadeUp .6s ease .1s both;
     }
 
+    /* Upload box */
     .upload-box {
       border: 2px dashed var(--border);
-      padding: 52px 32px;
+      padding: 48px 28px;
       border-radius: 14px;
       text-align: center;
       background: var(--bg);
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all .3s;
       position: relative;
     }
 
@@ -116,26 +122,28 @@
 
     .upload-box.file-selected {
       border-color: var(--success);
-      background: rgba(16,185,129,0.05);
+      background: rgba(16, 185, 129, .05);
       border-style: solid;
     }
 
-    .upload-box input[type=file] { display: none; }
+    .upload-box input[type=file] {
+      display: none;
+    }
 
     .upload-icon {
       width: 60px;
       height: 60px;
-      margin: 0 auto 18px;
+      margin: 0 auto 16px;
       background: var(--primary-light);
       border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.3s ease;
+      transition: all .3s;
     }
 
     .upload-box:hover .upload-icon {
-      background: rgba(99,102,241,0.14);
+      background: rgba(99, 102, 241, .14);
       transform: translateY(-3px);
     }
 
@@ -153,29 +161,31 @@
     }
 
     .upload-subtitle {
-      font-size: 0.82rem;
+      font-size: .82rem;
       color: var(--text-muted);
     }
 
-    /* File Preview */
+    /* File preview */
     .file-preview {
       display: none;
       align-items: center;
       gap: 12px;
       padding: 12px 16px;
-      background: rgba(16,185,129,0.05);
-      border: 1px solid rgba(16,185,129,0.18);
+      background: rgba(16, 185, 129, .05);
+      border: 1px solid rgba(16, 185, 129, .18);
       border-radius: 12px;
       margin-top: 16px;
-      animation: slideUp 0.3s ease;
+      animation: slideUp .3s ease;
     }
 
-    .file-preview.visible { display: flex; }
+    .file-preview.visible {
+      display: flex;
+    }
 
     .file-preview .file-icon {
       width: 40px;
       height: 40px;
-      background: rgba(16,185,129,0.1);
+      background: rgba(16, 185, 129, .1);
       border-radius: 10px;
       display: flex;
       align-items: center;
@@ -183,13 +193,20 @@
       flex-shrink: 0;
     }
 
-    .file-preview .file-icon svg { width: 20px; height: 20px; color: var(--success); }
+    .file-preview .file-icon svg {
+      width: 20px;
+      height: 20px;
+      color: var(--success);
+    }
 
-    .file-preview .file-info { flex: 1; min-width: 0; }
+    .file-preview .file-info {
+      flex: 1;
+      min-width: 0;
+    }
 
     .file-preview .file-name {
       font-weight: 600;
-      font-size: 0.88rem;
+      font-size: .88rem;
       color: var(--text);
       white-space: nowrap;
       overflow: hidden;
@@ -197,7 +214,7 @@
     }
 
     .file-preview .file-size {
-      font-size: 0.76rem;
+      font-size: .76rem;
       color: var(--text-muted);
     }
 
@@ -208,25 +225,25 @@
       padding: 6px;
       border-radius: 8px;
       color: var(--text-muted);
-      transition: all 0.2s;
+      transition: all .2s;
       flex-shrink: 0;
     }
 
     .file-preview .file-remove:hover {
-      background: rgba(239,68,68,0.08);
+      background: rgba(239, 68, 68, .08);
       color: var(--danger);
     }
 
-    /* Button */
+    /* Analyze button */
     .btn-analyze {
       background: linear-gradient(135deg, var(--primary), var(--accent));
       border: none;
-      color: white;
+      color: #fff;
       font-weight: 600;
       padding: 15px;
       border-radius: 12px;
-      font-size: 0.95rem;
-      transition: all 0.3s ease;
+      font-size: .95rem;
+      transition: all .3s;
       box-shadow: 0 4px 16px var(--primary-glow);
       width: 100%;
       margin-top: 20px;
@@ -243,10 +260,12 @@
       box-shadow: 0 8px 24px var(--primary-glow);
     }
 
-    .btn-analyze:active:not(:disabled) { transform: translateY(0); }
+    .btn-analyze:active:not(:disabled) {
+      transform: translateY(0);
+    }
 
     .btn-analyze:disabled {
-      opacity: 0.45;
+      opacity: .45;
       cursor: not-allowed;
     }
 
@@ -254,25 +273,290 @@
       display: none;
       width: 18px;
       height: 18px;
-      border: 2.5px solid rgba(255,255,255,0.3);
+      border: 2.5px solid rgba(255, 255, 255, .3);
       border-top-color: #fff;
       border-radius: 50%;
-      animation: spin 0.7s linear infinite;
+      animation: spin .7s linear infinite;
     }
 
-    .btn-analyze.loading .spinner { display: inline-block; }
+    .btn-analyze.loading .spinner {
+      display: inline-block;
+    }
 
-    /* Features */
+    /* Error alert */
+    .alert-error {
+      display: none;
+      background: rgba(239, 68, 68, .06);
+      border: 1px solid rgba(239, 68, 68, .18);
+      color: #b91c1c;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: .88rem;
+      margin-top: 16px;
+      text-align: center;
+      animation: fadeUp .4s ease;
+    }
+
+    .alert-error.visible {
+      display: block;
+    }
+
+    /* ─── Result Section ─── */
+    .result-section {
+      display: none;
+      width: 100%;
+      max-width: 560px;
+      margin-top: 24px;
+      animation: fadeUp .5s ease;
+    }
+
+    .result-section.visible {
+      display: block;
+    }
+
+    .result-card {
+      background: var(--surface);
+      border-radius: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .04), 0 12px 40px rgba(0, 0, 0, .07);
+      padding: 32px;
+      margin-bottom: 20px;
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .result-header .badge {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: #fff;
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .05em;
+      padding: 4px 12px;
+      border-radius: 20px;
+      text-transform: uppercase;
+    }
+
+    .result-header h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .result-body {
+      font-size: .92rem;
+      line-height: 1.75;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* Markdown-style headings in result */
+    .result-body h2,
+    .result-body h3,
+    .result-body h4 {
+      font-weight: 700;
+      color: var(--text);
+      margin: 16px 0 6px;
+      font-size: 1rem;
+    }
+
+    .result-body strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .result-body ul,
+    .result-body ol {
+      padding-left: 20px;
+      margin: 6px 0;
+    }
+
+    .result-body li {
+      margin-bottom: 3px;
+    }
+
+    .result-body hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 12px 0;
+    }
+
+    /* ─── Q&A Chat ─── */
+    .chat-card {
+      background: var(--surface);
+      border-radius: 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .04), 0 12px 40px rgba(0, 0, 0, .07);
+      padding: 28px;
+    }
+
+    .chat-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chat-title span {
+      font-size: 1.2rem;
+    }
+
+    .chat-messages {
+      max-height: 360px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding-right: 4px;
+    }
+
+    .chat-messages:empty::before {
+      content: 'Ask anything about the invoice…';
+      color: var(--text-muted);
+      font-size: .88rem;
+      text-align: center;
+      padding: 24px 0;
+      display: block;
+    }
+
+    .msg {
+      padding: 12px 16px;
+      border-radius: 14px;
+      font-size: .88rem;
+      line-height: 1.6;
+      max-width: 100%;
+      word-break: break-word;
+    }
+
+    .msg.user {
+      background: var(--chat-user);
+      color: var(--primary-dark);
+      font-weight: 500;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+
+    .msg.ai {
+      background: var(--chat-ai);
+      color: var(--text-secondary);
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+
+    .msg.ai strong {
+      color: var(--text);
+    }
+
+    .msg.thinking {
+      opacity: .6;
+      font-style: italic;
+    }
+
+    .chat-input-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .chat-input {
+      flex: 1;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-family: inherit;
+      font-size: .9rem;
+      color: var(--text);
+      background: var(--bg);
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .chat-input:focus {
+      border-color: var(--primary);
+    }
+
+    .btn-ask {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border: none;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: .9rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .2s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-ask:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px var(--primary-glow);
+    }
+
+    .btn-ask:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .btn-ask .spinner {
+      display: none;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, .3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    .btn-ask.loading .spinner {
+      display: inline-block;
+    }
+
+    .btn-new {
+      display: block;
+      width: 100%;
+      margin-top: 16px;
+      padding: 13px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      background: var(--bg);
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: .9rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .2s;
+      text-align: center;
+    }
+
+    .btn-new:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    /* Features row */
     .features {
       display: flex;
-      gap: 40px;
-      margin-top: 40px;
-      animation: fadeUp 0.6s ease 0.3s both;
+      gap: 32px;
+      margin-top: 36px;
+      animation: fadeUp .6s ease .3s both;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
     .feature {
       text-align: center;
       flex: 1;
+      min-width: 100px;
     }
 
     .feature-icon {
@@ -282,51 +566,77 @@
 
     .feature h6 {
       font-weight: 700;
-      font-size: 0.88rem;
+      font-size: .88rem;
       margin-bottom: 3px;
     }
 
     .feature p {
-      font-size: 0.78rem;
+      font-size: .78rem;
       color: var(--text-muted);
       line-height: 1.4;
     }
 
-    /* Alert */
-    .flash-alert {
-      background: rgba(239,68,68,0.06);
-      border: 1px solid rgba(239,68,68,0.15);
-      color: #b91c1c;
-      border-radius: 12px;
-      padding: 12px 18px;
-      font-size: 0.88rem;
-      margin-bottom: 20px;
-      width: 100%;
-      max-width: 520px;
-      text-align: center;
-      animation: fadeUp 0.4s ease;
-    }
-
     /* Animations */
     @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     @keyframes fadeDown {
-      from { opacity: 0; transform: translateY(-12px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(-12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     @keyframes slideUp {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Scrollbar */
+    .chat-messages::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .chat-messages::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
   </style>
 </head>
+
 <body>
+
   <!-- Hero -->
   <div class="hero">
     <div class="hero-logo">IF</div>
@@ -334,29 +644,31 @@
     <p>Upload an invoice and let AI extract key details instantly.</p>
   </div>
 
-  
-
   <!-- Upload Card -->
-  <div class="upload-card">
+  <div class="card" id="uploadCard">
     <form id="uploadForm">
       <div class="upload-box" id="uploadBox">
-        <label for="invoice" style="cursor:pointer; display:block; margin:0;">
+        <label for="invoice" style="cursor:pointer;display:block;margin:0;">
           <div class="upload-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
             </svg>
           </div>
           <p class="upload-title" id="uploadTitle">Drop your invoice here or click to browse</p>
           <p class="upload-subtitle">PNG, JPG, JPEG, PDF &bull; Max 10MB</p>
         </label>
-        <input type="file" id="invoice" name="invoice" accept=".png,.jpg,.jpeg,.pdf" required>
+        <input type="file" id="invoice" name="invoice" accept=".png,.jpg,.jpeg,.pdf">
       </div>
 
       <!-- File Preview -->
       <div class="file-preview" id="filePreview">
         <div class="file-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+            stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
           </svg>
         </div>
         <div class="file-info">
@@ -364,11 +676,14 @@
           <div class="file-size" id="fileSize"></div>
         </div>
         <button type="button" class="file-remove" id="fileRemove" title="Remove file">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24"
+            stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
+
+      <div class="alert-error" id="alertError"></div>
 
       <button type="submit" class="btn-analyze" id="analyzeBtn" disabled>
         <span class="spinner"></span>
@@ -377,8 +692,37 @@
     </form>
   </div>
 
+  <!-- Result Section (hidden until analysis complete) -->
+  <div class="result-section" id="resultSection">
+
+    <!-- Summary Card -->
+    <div class="result-card">
+      <div class="result-header">
+        <span class="badge">AI Analysis</span>
+        <h2 id="resultFilename">Invoice Summary</h2>
+      </div>
+      <div class="result-body" id="resultBody"></div>
+    </div>
+
+    <!-- Q&A Chat Card -->
+    <div class="chat-card">
+      <div class="chat-title"><span>💬</span> Ask About This Invoice</div>
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="chat-input-row">
+        <input type="text" class="chat-input" id="chatInput" placeholder="e.g. What is the total amount due?"
+          maxlength="500">
+        <button class="btn-ask" id="askBtn">
+          <span class="spinner"></span>
+          <span>Ask</span>
+        </button>
+      </div>
+    </div>
+
+    <button class="btn-new" id="newBtn">⬆ Analyze Another Invoice</button>
+  </div>
+
   <!-- Features -->
-  <div class="features">
+  <div class="features" id="featuresRow">
     <div class="feature">
       <div class="feature-icon">📤</div>
       <h6>Upload</h6>
@@ -391,48 +735,64 @@
     </div>
     <div class="feature">
       <div class="feature-icon">💬</div>
-      <h6>Q&A Chat</h6>
+      <h6>Q&amp;A Chat</h6>
       <p>Ask follow-up questions</p>
     </div>
   </div>
 
   <script>
+    // ── CONFIG: point this to your Render backend URL ──
+    let API_BASE = 'https://invoice-analyzer-n5d8.onrender.com';
+    if (API_BASE.endsWith('/')) API_BASE = API_BASE.slice(0, -1);
+
+    // ── Elements ──
     const uploadBox = document.getElementById('uploadBox');
     const fileInput = document.getElementById('invoice');
     const filePreview = document.getElementById('filePreview');
-    const fileName = document.getElementById('fileName');
-    const fileSize = document.getElementById('fileSize');
+    const fileNameEl = document.getElementById('fileName');
+    const fileSizeEl = document.getElementById('fileSize');
     const fileRemove = document.getElementById('fileRemove');
     const analyzeBtn = document.getElementById('analyzeBtn');
     const uploadForm = document.getElementById('uploadForm');
     const uploadTitle = document.getElementById('uploadTitle');
+    const alertError = document.getElementById('alertError');
 
+    const resultSection = document.getElementById('resultSection');
+    const resultBody = document.getElementById('resultBody');
+    const resultFilename = document.getElementById('resultFilename');
+    const featuresRow = document.getElementById('featuresRow');
+
+    const chatMessages = document.getElementById('chatMessages');
+    const chatInput = document.getElementById('chatInput');
+    const askBtn = document.getElementById('askBtn');
+    const newBtn = document.getElementById('newBtn');
+
+    let chatHistory = '';
+
+    // ── Helpers ──
     function formatSize(bytes) {
       if (bytes < 1024) return bytes + ' B';
       if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
       return (bytes / 1048576).toFixed(1) + ' MB';
     }
 
-    const ALLOWED = ['png', 'jpg', 'jpeg', 'pdf'];
+    function showError(msg) {
+      alertError.textContent = '⚠️ ' + msg;
+      alertError.classList.add('visible');
+    }
+    function hideError() { alertError.classList.remove('visible'); }
 
     function isAllowed(name) {
-      return ALLOWED.includes(name.split('.').pop().toLowerCase());
+      return ['png', 'jpg', 'jpeg', 'pdf'].includes(name.split('.').pop().toLowerCase());
     }
 
     function showFile(file) {
       if (!file) return;
-      if (!isAllowed(file.name)) {
-        alert('Invalid file type. Please upload PNG, JPG, JPEG, or PDF.');
-        clearFile();
-        return;
-      }
-      if (file.size > 10 * 1024 * 1024) {
-        alert('File too large. Maximum 10MB.');
-        clearFile();
-        return;
-      }
-      fileName.textContent = file.name;
-      fileSize.textContent = formatSize(file.size);
+      if (!isAllowed(file.name)) { showError('Invalid file type. Please upload PNG, JPG, JPEG, or PDF.'); clearFile(); return; }
+      if (file.size > 10 * 1024 * 1024) { showError('File too large. Maximum size is 10 MB.'); clearFile(); return; }
+      hideError();
+      fileNameEl.textContent = file.name;
+      fileSizeEl.textContent = formatSize(file.size);
       filePreview.classList.add('visible');
       uploadBox.classList.add('file-selected');
       uploadTitle.textContent = 'File ready — click Analyze below';
@@ -445,82 +805,129 @@
       uploadBox.classList.remove('file-selected');
       uploadTitle.textContent = 'Drop your invoice here or click to browse';
       analyzeBtn.disabled = true;
+      hideError();
     }
 
+    // ── Simple markdown renderer ──
+    function renderMarkdown(text) {
+      return text
+        .replace(/^## (.+)$/gm, '<h3>$1</h3>')
+        .replace(/^### (.+)$/gm, '<h4>$1</h4>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/^- (.+)$/gm, '<li>$1</li>')
+        .replace(/(<li>.*<\/li>\n?)+/g, m => '<ul>' + m + '</ul>')
+        .replace(/\n{2,}/g, '<br><br>')
+        .replace(/\n/g, '<br>');
+    }
+
+    // ── File input events ──
     fileInput.addEventListener('change', function () {
       this.files && this.files[0] ? showFile(this.files[0]) : clearFile();
     });
+    fileRemove.addEventListener('click', function (e) { e.preventDefault(); e.stopPropagation(); clearFile(); });
 
-    fileRemove.addEventListener('click', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      clearFile();
-    });
-
-    uploadBox.addEventListener('dragover', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      this.classList.add('drag-over');
-    });
-
-    uploadBox.addEventListener('dragleave', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      this.classList.remove('drag-over');
-    });
-
+    uploadBox.addEventListener('dragover', function (e) { e.preventDefault(); this.classList.add('drag-over'); });
+    uploadBox.addEventListener('dragleave', function (e) { e.preventDefault(); this.classList.remove('drag-over'); });
     uploadBox.addEventListener('drop', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      this.classList.remove('drag-over');
+      e.preventDefault(); this.classList.remove('drag-over');
       const files = e.dataTransfer.files;
       if (files && files.length > 0) {
-        const dt = new DataTransfer();
-        dt.items.add(files[0]);
-        fileInput.files = dt.files;
-        showFile(files[0]);
+        const dt = new DataTransfer(); dt.items.add(files[0]); fileInput.files = dt.files; showFile(files[0]);
+      }
+    });
+    document.addEventListener('dragover', e => e.preventDefault());
+    document.addEventListener('drop', e => e.preventDefault());
+
+    // ── Form submit — call backend API ──
+    uploadForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      if (!fileInput.files || !fileInput.files[0]) return;
+
+      hideError();
+      analyzeBtn.classList.add('loading');
+      analyzeBtn.disabled = true;
+      analyzeBtn.querySelector('.btn-text').textContent = 'Analyzing with AI…';
+
+      const formData = new FormData();
+      formData.append('invoice', fileInput.files[0]);
+
+      try {
+        const res = await fetch(`${API_BASE}/api/upload`, { method: 'POST', body: formData });
+        const data = await res.json();
+
+        if (!res.ok || data.error) {
+          showError(data.error || 'Something went wrong. Please try again.');
+        } else {
+          // Show result
+          resultFilename.textContent = data.filename || 'Invoice Summary';
+          resultBody.innerHTML = renderMarkdown(data.summary || '');
+          chatMessages.innerHTML = '';
+          chatHistory = '';
+          resultSection.classList.add('visible');
+          featuresRow.style.display = 'none';
+          resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      } catch (err) {
+        showError('Cannot reach the server. Make sure the backend is running.');
+      } finally {
+        analyzeBtn.classList.remove('loading');
+        analyzeBtn.disabled = false;
+        analyzeBtn.querySelector('.btn-text').textContent = 'Analyze Invoice';
       }
     });
 
-    document.addEventListener('dragover', function (e) { e.preventDefault(); });
-    document.addEventListener('drop', function (e) { e.preventDefault(); });
-
-    const BASE_URL = "https://invoice-analyzer-n5d8.onrender.com";
-
-uploadForm.addEventListener('submit', async function (e) {
-  e.preventDefault();
-
-  if (!fileInput.files || !fileInput.files[0]) return;
-
-  analyzeBtn.classList.add('loading');
-  analyzeBtn.disabled = true;
-  analyzeBtn.querySelector('.btn-text').textContent = 'Analyzing with AI...';
-
-  const formData = new FormData();
-  formData.append("invoice", fileInput.files[0]);
-
-  try {
-    const response = await fetch(BASE_URL + "/upload", {
-      method: "POST",
-      body: formData
-    });
-
-    const data = await response.json();
-
-    if (data.error) {
-      alert(data.error);
-    } else {
-      alert("Summary:\\n\\n" + data.summary);
+    // ── Q&A ──
+    function appendMsg(role, html) {
+      const div = document.createElement('div');
+      div.className = 'msg ' + role;
+      div.innerHTML = html;
+      chatMessages.appendChild(div);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      return div;
     }
 
-  } catch (err) {
-    alert("Error connecting to backend");
-  }
+    askBtn.addEventListener('click', sendQuestion);
+    chatInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') sendQuestion(); });
 
-  analyzeBtn.classList.remove('loading');
-  analyzeBtn.disabled = false;
-  analyzeBtn.querySelector('.btn-text').textContent = 'Analyze Invoice';
-});
+    async function sendQuestion() {
+      const q = chatInput.value.trim();
+      if (!q) return;
+      chatInput.value = '';
+      appendMsg('user', q);
+      const thinking = appendMsg('ai thinking', '…');
+      askBtn.classList.add('loading');
+      askBtn.disabled = true;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/ask`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: q, history: chatHistory })
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          thinking.textContent = '⚠️ ' + (data.error || 'Error getting answer.');
+        } else {
+          thinking.classList.remove('thinking');
+          thinking.innerHTML = renderMarkdown(data.answer);
+          chatHistory += `User: ${q}\nAssistant: ${data.answer}\n\n`;
+        }
+      } catch (err) {
+        thinking.textContent = '⚠️ Could not reach the server.';
+      } finally {
+        askBtn.classList.remove('loading');
+        askBtn.disabled = false;
+      }
+    }
+
+    // ── New invoice ──
+    newBtn.addEventListener('click', function () {
+      clearFile();
+      resultSection.classList.remove('visible');
+      featuresRow.style.display = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
   </script>
 </body>
+
 </html>
