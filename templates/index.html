@@ -334,18 +334,11 @@
     <p>Upload an invoice and let AI extract key details instantly.</p>
   </div>
 
-  <!-- Flash Messages -->
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      {% for message in messages %}
-        <div class="flash-alert">⚠️ {{ message }}</div>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
+  
 
   <!-- Upload Card -->
   <div class="upload-card">
-    <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+    <form id="uploadForm">
       <div class="upload-box" id="uploadBox">
         <label for="invoice" style="cursor:pointer; display:block; margin:0;">
           <div class="upload-icon">
@@ -492,12 +485,42 @@
     document.addEventListener('dragover', function (e) { e.preventDefault(); });
     document.addEventListener('drop', function (e) { e.preventDefault(); });
 
-    uploadForm.addEventListener('submit', function () {
-      if (!fileInput.files || !fileInput.files[0]) return false;
-      analyzeBtn.classList.add('loading');
-      analyzeBtn.disabled = true;
-      analyzeBtn.querySelector('.btn-text').textContent = 'Analyzing with AI...';
+    const BASE_URL = "https://invoice-analyzer-n5d8.onrender.com";
+
+uploadForm.addEventListener('submit', async function (e) {
+  e.preventDefault();
+
+  if (!fileInput.files || !fileInput.files[0]) return;
+
+  analyzeBtn.classList.add('loading');
+  analyzeBtn.disabled = true;
+  analyzeBtn.querySelector('.btn-text').textContent = 'Analyzing with AI...';
+
+  const formData = new FormData();
+  formData.append("invoice", fileInput.files[0]);
+
+  try {
+    const response = await fetch(BASE_URL + "/upload", {
+      method: "POST",
+      body: formData
     });
+
+    const data = await response.json();
+
+    if (data.error) {
+      alert(data.error);
+    } else {
+      alert("Summary:\\n\\n" + data.summary);
+    }
+
+  } catch (err) {
+    alert("Error connecting to backend");
+  }
+
+  analyzeBtn.classList.remove('loading');
+  analyzeBtn.disabled = false;
+  analyzeBtn.querySelector('.btn-text').textContent = 'Analyze Invoice';
+});
   </script>
 </body>
 </html>
