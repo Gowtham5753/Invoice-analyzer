@@ -1,0 +1,503 @@
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InvoiceFlow — Smart Invoice Processing</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --primary-light: rgba(99, 102, 241, 0.08);
+      --primary-glow: rgba(99, 102, 241, 0.2);
+      --accent: #8b5cf6;
+      --surface: #ffffff;
+      --bg: #f0f2f8;
+      --text: #1a1a2e;
+      --text-secondary: #4a4a6a;
+      --text-muted: #8b8ba7;
+      --border: #e4e7f1;
+      --success: #10b981;
+      --danger: #ef4444;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── Hero ─── */
+    .hero {
+      text-align: center;
+      margin-bottom: 36px;
+      animation: fadeDown 0.6s ease;
+    }
+
+    .hero-logo {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      color: white;
+      font-weight: 800;
+      font-size: 20px;
+      letter-spacing: -0.5px;
+      box-shadow: 0 8px 24px var(--primary-glow);
+    }
+
+    .hero h1 {
+      font-size: 2.4rem;
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, var(--text), var(--primary-dark));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 380px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    /* ─── Upload Card ─── */
+    .upload-card {
+      background: var(--surface);
+      border-radius: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 12px 40px rgba(0,0,0,0.06);
+      padding: 32px;
+      width: 100%;
+      max-width: 520px;
+      animation: fadeUp 0.6s ease 0.1s both;
+    }
+
+    .upload-box {
+      border: 2px dashed var(--border);
+      padding: 52px 32px;
+      border-radius: 14px;
+      text-align: center;
+      background: var(--bg);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .upload-box:hover {
+      border-color: var(--primary);
+      background: var(--primary-light);
+    }
+
+    .upload-box.drag-over {
+      border-color: var(--primary);
+      background: var(--primary-light);
+      box-shadow: 0 0 0 4px var(--primary-glow);
+      transform: scale(1.01);
+    }
+
+    .upload-box.file-selected {
+      border-color: var(--success);
+      background: rgba(16,185,129,0.05);
+      border-style: solid;
+    }
+
+    .upload-box input[type=file] { display: none; }
+
+    .upload-icon {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 18px;
+      background: var(--primary-light);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+
+    .upload-box:hover .upload-icon {
+      background: rgba(99,102,241,0.14);
+      transform: translateY(-3px);
+    }
+
+    .upload-icon svg {
+      width: 28px;
+      height: 28px;
+      color: var(--primary);
+    }
+
+    .upload-title {
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+
+    .upload-subtitle {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    /* File Preview */
+    .file-preview {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: rgba(16,185,129,0.05);
+      border: 1px solid rgba(16,185,129,0.18);
+      border-radius: 12px;
+      margin-top: 16px;
+      animation: slideUp 0.3s ease;
+    }
+
+    .file-preview.visible { display: flex; }
+
+    .file-preview .file-icon {
+      width: 40px;
+      height: 40px;
+      background: rgba(16,185,129,0.1);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .file-preview .file-icon svg { width: 20px; height: 20px; color: var(--success); }
+
+    .file-preview .file-info { flex: 1; min-width: 0; }
+
+    .file-preview .file-name {
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-preview .file-size {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+
+    .file-preview .file-remove {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .file-preview .file-remove:hover {
+      background: rgba(239,68,68,0.08);
+      color: var(--danger);
+    }
+
+    /* Button */
+    .btn-analyze {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border: none;
+      color: white;
+      font-weight: 600;
+      padding: 15px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 16px var(--primary-glow);
+      width: 100%;
+      margin-top: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: inherit;
+    }
+
+    .btn-analyze:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px var(--primary-glow);
+    }
+
+    .btn-analyze:active:not(:disabled) { transform: translateY(0); }
+
+    .btn-analyze:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .btn-analyze .spinner {
+      display: none;
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    .btn-analyze.loading .spinner { display: inline-block; }
+
+    /* Features */
+    .features {
+      display: flex;
+      gap: 40px;
+      margin-top: 40px;
+      animation: fadeUp 0.6s ease 0.3s both;
+    }
+
+    .feature {
+      text-align: center;
+      flex: 1;
+    }
+
+    .feature-icon {
+      font-size: 1.5rem;
+      margin-bottom: 6px;
+    }
+
+    .feature h6 {
+      font-weight: 700;
+      font-size: 0.88rem;
+      margin-bottom: 3px;
+    }
+
+    .feature p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Alert */
+    .flash-alert {
+      background: rgba(239,68,68,0.06);
+      border: 1px solid rgba(239,68,68,0.15);
+      color: #b91c1c;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 0.88rem;
+      margin-bottom: 20px;
+      width: 100%;
+      max-width: 520px;
+      text-align: center;
+      animation: fadeUp 0.4s ease;
+    }
+
+    /* Animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-logo">IF</div>
+    <h1>InvoiceFlow</h1>
+    <p>Upload an invoice and let AI extract key details instantly.</p>
+  </div>
+
+  <!-- Flash Messages -->
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for message in messages %}
+        <div class="flash-alert">⚠️ {{ message }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <!-- Upload Card -->
+  <div class="upload-card">
+    <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+      <div class="upload-box" id="uploadBox">
+        <label for="invoice" style="cursor:pointer; display:block; margin:0;">
+          <div class="upload-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+            </svg>
+          </div>
+          <p class="upload-title" id="uploadTitle">Drop your invoice here or click to browse</p>
+          <p class="upload-subtitle">PNG, JPG, JPEG, PDF &bull; Max 10MB</p>
+        </label>
+        <input type="file" id="invoice" name="invoice" accept=".png,.jpg,.jpeg,.pdf" required>
+      </div>
+
+      <!-- File Preview -->
+      <div class="file-preview" id="filePreview">
+        <div class="file-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+          </svg>
+        </div>
+        <div class="file-info">
+          <div class="file-name" id="fileName"></div>
+          <div class="file-size" id="fileSize"></div>
+        </div>
+        <button type="button" class="file-remove" id="fileRemove" title="Remove file">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <button type="submit" class="btn-analyze" id="analyzeBtn" disabled>
+        <span class="spinner"></span>
+        <span class="btn-text">Analyze Invoice</span>
+      </button>
+    </form>
+  </div>
+
+  <!-- Features -->
+  <div class="features">
+    <div class="feature">
+      <div class="feature-icon">📤</div>
+      <h6>Upload</h6>
+      <p>Drop or browse your invoice</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">🧠</div>
+      <h6>AI Analysis</h6>
+      <p>Gemini extracts all key details</p>
+    </div>
+    <div class="feature">
+      <div class="feature-icon">💬</div>
+      <h6>Q&A Chat</h6>
+      <p>Ask follow-up questions</p>
+    </div>
+  </div>
+
+  <script>
+    const uploadBox = document.getElementById('uploadBox');
+    const fileInput = document.getElementById('invoice');
+    const filePreview = document.getElementById('filePreview');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const fileRemove = document.getElementById('fileRemove');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const uploadForm = document.getElementById('uploadForm');
+    const uploadTitle = document.getElementById('uploadTitle');
+
+    function formatSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / 1048576).toFixed(1) + ' MB';
+    }
+
+    const ALLOWED = ['png', 'jpg', 'jpeg', 'pdf'];
+
+    function isAllowed(name) {
+      return ALLOWED.includes(name.split('.').pop().toLowerCase());
+    }
+
+    function showFile(file) {
+      if (!file) return;
+      if (!isAllowed(file.name)) {
+        alert('Invalid file type. Please upload PNG, JPG, JPEG, or PDF.');
+        clearFile();
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        alert('File too large. Maximum 10MB.');
+        clearFile();
+        return;
+      }
+      fileName.textContent = file.name;
+      fileSize.textContent = formatSize(file.size);
+      filePreview.classList.add('visible');
+      uploadBox.classList.add('file-selected');
+      uploadTitle.textContent = 'File ready — click Analyze below';
+      analyzeBtn.disabled = false;
+    }
+
+    function clearFile() {
+      fileInput.value = '';
+      filePreview.classList.remove('visible');
+      uploadBox.classList.remove('file-selected');
+      uploadTitle.textContent = 'Drop your invoice here or click to browse';
+      analyzeBtn.disabled = true;
+    }
+
+    fileInput.addEventListener('change', function () {
+      this.files && this.files[0] ? showFile(this.files[0]) : clearFile();
+    });
+
+    fileRemove.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      clearFile();
+    });
+
+    uploadBox.addEventListener('dragover', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.classList.add('drag-over');
+    });
+
+    uploadBox.addEventListener('dragleave', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.classList.remove('drag-over');
+    });
+
+    uploadBox.addEventListener('drop', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.classList.remove('drag-over');
+      const files = e.dataTransfer.files;
+      if (files && files.length > 0) {
+        const dt = new DataTransfer();
+        dt.items.add(files[0]);
+        fileInput.files = dt.files;
+        showFile(files[0]);
+      }
+    });
+
+    document.addEventListener('dragover', function (e) { e.preventDefault(); });
+    document.addEventListener('drop', function (e) { e.preventDefault(); });
+
+    uploadForm.addEventListener('submit', function () {
+      if (!fileInput.files || !fileInput.files[0]) return false;
+      analyzeBtn.classList.add('loading');
+      analyzeBtn.disabled = true;
+      analyzeBtn.querySelector('.btn-text').textContent = 'Analyzing with AI...';
+    });
+  </script>
+</body>
+</html>
